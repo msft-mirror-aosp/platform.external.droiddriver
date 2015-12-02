@@ -19,11 +19,10 @@ package io.appium.droiddriver.helpers;
 import android.annotation.TargetApi;
 import android.app.Instrumentation;
 import android.os.Build;
-
 import io.appium.droiddriver.DroidDriver;
+import io.appium.droiddriver.duo.DuoDriver;
 import io.appium.droiddriver.exceptions.DroidDriverException;
 import io.appium.droiddriver.instrumentation.InstrumentationDriver;
-import io.appium.droiddriver.uiautomation.UiAutomationDriver;
 import io.appium.droiddriver.util.InstrumentationUtils;
 
 /**
@@ -83,7 +82,7 @@ public class DroidDrivers {
     // If "dd.driver" is not specified, return default.
     if (hasUiAutomation()) {
       checkUiAutomation();
-      return new UiAutomationDriver(instrumentation);
+      return new DuoDriver();
     }
     return new InstrumentationDriver(instrumentation);
   }
