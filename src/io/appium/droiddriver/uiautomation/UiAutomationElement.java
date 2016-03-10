@@ -141,7 +141,9 @@ public class UiAutomationElement extends BaseUiElement<AccessibilityNodeInfo, Ui
     Rect parentBounds;
     while (parent != null) {
       parentBounds = parent.getBounds();
-      visibleBounds.intersect(parentBounds);
+      if (!visibleBounds.intersect(parentBounds)) {
+        return new Rect();
+      }
       parent = parent.getParent();
     }
     return visibleBounds;
