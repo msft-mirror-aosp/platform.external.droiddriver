@@ -27,11 +27,10 @@ dependencies {
         // For development only.
         compile 'io.appium:droiddriver:1.0.0-SNAPSHOT'
     } else {
-        // This is broken now b/c droiddriver-1.0.0 is not published yet
-        compile 'io.appium:droiddriver:1.0.0'
+        compile 'io.appium:droiddriver:1.0.0-BETA1'
     }
 
-    compile 'com.android.support.test:testing-support-lib:0.1'
+    compile 'com.android.support.test:runner:0.4.1'
 }
 
 tasks.withType(JavaCompile) {
