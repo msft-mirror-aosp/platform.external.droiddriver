@@ -16,6 +16,8 @@
 
 package io.appium.droiddriver.instrumentation;
 
+import static io.appium.droiddriver.util.Strings.charSequenceToString;
+
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.view.View;
@@ -39,8 +41,6 @@ import io.appium.droiddriver.base.DroidDriverContext;
 import io.appium.droiddriver.finders.Attribute;
 import io.appium.droiddriver.util.InstrumentationUtils;
 import io.appium.droiddriver.util.Preconditions;
-
-import static io.appium.droiddriver.util.Strings.charSequenceToString;
 
 /**
  * A UiElement that is backed by a View.

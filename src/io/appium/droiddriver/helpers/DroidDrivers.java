@@ -19,6 +19,7 @@ package io.appium.droiddriver.helpers;
 import android.annotation.TargetApi;
 import android.app.Instrumentation;
 import android.os.Build;
+
 import io.appium.droiddriver.DroidDriver;
 import io.appium.droiddriver.duo.DuoDriver;
 import io.appium.droiddriver.exceptions.DroidDriverException;

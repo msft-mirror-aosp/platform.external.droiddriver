@@ -16,15 +16,16 @@
 
 package io.appium.droiddriver.duo;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.Instrumentation;
+
 import io.appium.droiddriver.base.AbstractDroidDriver;
 import io.appium.droiddriver.base.CompositeDroidDriver;
 import io.appium.droiddriver.instrumentation.InstrumentationDriver;
 import io.appium.droiddriver.uiautomation.UiAutomationDriver;
 import io.appium.droiddriver.util.ActivityUtils;
 import io.appium.droiddriver.util.InstrumentationUtils;
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.Instrumentation;
 
 /**
  * Implementation of DroidDriver that attempts to use the best driver for the current activity.

@@ -17,6 +17,7 @@
 package io.appium.droiddriver.base;
 
 import android.util.Log;
+
 import io.appium.droiddriver.UiElement;
 import io.appium.droiddriver.finders.ByXPath;
 import io.appium.droiddriver.finders.Finder;

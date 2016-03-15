@@ -16,6 +16,8 @@
 
 package io.appium.droiddriver.finders;
 
+import static io.appium.droiddriver.util.Preconditions.checkNotNull;
+
 import android.content.Context;
 
 import java.util.ArrayList;
@@ -24,8 +26,6 @@ import java.util.List;
 import io.appium.droiddriver.UiElement;
 import io.appium.droiddriver.exceptions.ElementNotFoundException;
 import io.appium.droiddriver.util.InstrumentationUtils;
-
-import static io.appium.droiddriver.util.Preconditions.checkNotNull;
 
 /**
  * Convenience methods to create commonly used finders.

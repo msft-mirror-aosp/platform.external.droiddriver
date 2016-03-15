@@ -124,6 +124,7 @@ public final class Predicates {
    * {@code true}. The components are evaluated in order, and evaluation will be "short-circuited"
    * as soon as a false predicate is found.
    */
+  @SuppressWarnings("RedundantTypeArguments") // Some compilers cannot infer <T>
   @SafeVarargs
   public static <T> Predicate<T> allOf(final Predicate<? super T>... components) {
     return Predicates.<T>allOf(Arrays.asList(components));
@@ -158,6 +159,7 @@ public final class Predicates {
    * {@code true}. The components are evaluated in order, and evaluation will be "short-circuited"
    * as soon as a true predicate is found.
    */
+  @SuppressWarnings("RedundantTypeArguments") // Some compilers cannot infer <T>
   @SafeVarargs
   public static <T> Predicate<T> anyOf(final Predicate<? super T>... components) {
     return Predicates.<T>anyOf(Arrays.asList(components));
