@@ -21,30 +21,26 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-
+import io.appium.droiddriver.exceptions.DroidDriverException;
+import io.appium.droiddriver.exceptions.TimeoutException;
+import io.appium.droiddriver.exceptions.UnrecoverableException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-import io.appium.droiddriver.exceptions.DroidDriverException;
-import io.appium.droiddriver.exceptions.TimeoutException;
-import io.appium.droiddriver.exceptions.UnrecoverableException;
-
-/**
- * Static utility methods pertaining to {@link Instrumentation}.
- */
+/** Static utility methods pertaining to {@link Instrumentation}. */
 public class InstrumentationUtils {
+  private static final Runnable EMPTY_RUNNABLE =
+      new Runnable() {
+        @Override
+        public void run() {}
+      };
+  private static final Executor RUN_ON_MAIN_SYNC_EXECUTOR = Executors.newSingleThreadExecutor();
   private static Instrumentation instrumentation;
   private static Bundle options;
   private static long runOnMainSyncTimeoutMillis;
-  private static final Runnable EMPTY_RUNNABLE = new Runnable() {
-    @Override
-    public void run() {
-    }
-  };
-  private static final Executor RUN_ON_MAIN_SYNC_EXECUTOR = Executors.newSingleThreadExecutor();
 
   /**
    * Initializes this class. If you use a runner that is not DroidDriver-aware, you need to call
@@ -64,8 +60,9 @@ public class InstrumentationUtils {
 
   private static void checkInitialized() {
     if (instrumentation == null) {
-      throw new UnrecoverableException("If you use a runner that is not DroidDriver-aware, you" +
-          " need to call InstrumentationUtils.init appropriately");
+      throw new UnrecoverableException(
+          "If you use a runner that is not DroidDriver-aware, you"
+              + " need to call InstrumentationUtils.init appropriately");
     }
   }
 
@@ -79,8 +76,9 @@ public class InstrumentationUtils {
   }
 
   /**
-   * Gets the <a href= "http://developer.android.com/tools/testing/testing_otheride.html#AMOptionsSyntax"
-   * >am instrument options</a>.
+   * Gets the <a href=
+   * "http://developer.android.com/tools/testing/testing_otheride.html#AMOptionsSyntax" >am
+   * instrument options</a>.
    */
   public static Bundle getOptions() {
     checkInitialized();
@@ -110,14 +108,15 @@ public class InstrumentationUtils {
    * example, the ProgressBar.
    */
   public static boolean tryWaitForIdleSync(long timeoutMillis) {
-    validateNotAppThread();
+    checkNotMainThread();
     FutureTask<Void> emptyTask = new FutureTask<Void>(EMPTY_RUNNABLE, null);
     instrumentation.waitForIdle(emptyTask);
 
     try {
       emptyTask.get(timeoutMillis, TimeUnit.MILLISECONDS);
     } catch (java.util.concurrent.TimeoutException e) {
-      Logs.log(Log.INFO,
+      Logs.log(
+          Log.INFO,
           "Timed out after " + timeoutMillis + " milliseconds waiting for idle on main looper");
       return false;
     } catch (Throwable t) {
@@ -127,48 +126,67 @@ public class InstrumentationUtils {
   }
 
   public static void runOnMainSyncWithTimeout(final Runnable runnable) {
-    runOnMainSyncWithTimeout(new Callable<Void>() {
-      @Override
-      public Void call() throws Exception {
-        runnable.run();
-        return null;
-      }
-    });
+    runOnMainSyncWithTimeout(
+        new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            runnable.run();
+            return null;
+          }
+        });
   }
 
   /**
    * Runs {@code callable} on the main thread on best-effort basis up to a time limit, which
    * defaults to {@code 10000L} and can be set as an am instrument option under the key {@code
-   * dd.runOnMainSyncTimeout}. <p>This is a safer variation of {@link Instrumentation#runOnMainSync}
-   * because the latter may hang. You may turn off this behavior by setting {@code "-e
-   * dd.runOnMainSyncTimeout 0"} on the am command line.</p>The {@code callable} may never run, for
-   * example, if the main Looper has exited due to uncaught exception.
+   * dd.runOnMainSyncTimeout}.
+   *
+   * <p>This is a safer variation of {@link Instrumentation#runOnMainSync} because the latter may
+   * hang. You may turn off this behavior by setting {@code "-e dd.runOnMainSyncTimeout 0"} on the
+   * am command line.The {@code callable} may never run, for example, if the main Looper has exited
+   * due to uncaught exception.
    */
   public static <V> V runOnMainSyncWithTimeout(Callable<V> callable) {
-    validateNotAppThread();
+    checkNotMainThread();
     final RunOnMainSyncFutureTask<V> futureTask = new RunOnMainSyncFutureTask<>(callable);
 
     if (runOnMainSyncTimeoutMillis <= 0L) {
       // Call runOnMainSync on current thread without time limit.
       futureTask.runOnMainSyncNoThrow();
     } else {
-      RUN_ON_MAIN_SYNC_EXECUTOR.execute(new Runnable() {
-        @Override
-        public void run() {
-          futureTask.runOnMainSyncNoThrow();
-        }
-      });
+      RUN_ON_MAIN_SYNC_EXECUTOR.execute(
+          new Runnable() {
+            @Override
+            public void run() {
+              futureTask.runOnMainSyncNoThrow();
+            }
+          });
     }
 
     try {
       return futureTask.get(runOnMainSyncTimeoutMillis, TimeUnit.MILLISECONDS);
     } catch (java.util.concurrent.TimeoutException e) {
-      throw new TimeoutException("Timed out after " + runOnMainSyncTimeoutMillis
-          + " milliseconds waiting for Instrumentation.runOnMainSync", e);
+      throw new TimeoutException(
+          "Timed out after "
+              + runOnMainSyncTimeoutMillis
+              + " milliseconds waiting for Instrumentation.runOnMainSync",
+          e);
     } catch (Throwable t) {
       throw DroidDriverException.propagate(t);
     } finally {
       futureTask.cancel(false);
+    }
+  }
+
+  public static void checkMainThread() {
+    if (Looper.myLooper() != Looper.getMainLooper()) {
+      throw new DroidDriverException("This method must be called on the main thread");
+    }
+  }
+
+  public static void checkNotMainThread() {
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+      throw new DroidDriverException("This method cannot be called on the main thread");
     }
   }
 
@@ -183,13 +201,6 @@ public class InstrumentationUtils {
       } catch (Throwable e) {
         setException(e);
       }
-    }
-  }
-
-  private static void validateNotAppThread() {
-    if (Looper.myLooper() == Looper.getMainLooper()) {
-      throw new DroidDriverException(
-          "This method can not be called from the main application thread");
     }
   }
 }

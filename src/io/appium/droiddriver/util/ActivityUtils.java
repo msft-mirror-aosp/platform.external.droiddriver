@@ -17,9 +17,7 @@
 package io.appium.droiddriver.util;
 
 import android.app.Activity;
-
 import io.appium.droiddriver.exceptions.UnrecoverableException;
-import io.appium.droiddriver.instrumentation.InstrumentationDriver;
 
 /**
  * Static helper methods for retrieving activities.
@@ -48,15 +46,38 @@ public class ActivityUtils {
   }
 
   /**
-   * Gets the running (a.k.a. resumed or foreground) activity.
-   * {@link InstrumentationDriver} depends on this.
+   * Shorthand to {@link #getRunningActivity(long)} with {@code timeoutMillis=30_000}.
+   */
+  public static Activity getRunningActivity() {
+    return getRunningActivity(30_000L);
+  }
+
+  /**
+   * Waits for idle on main looper, then gets the running (a.k.a. resumed or foreground) activity.
    *
    * @return the currently running activity, or null if no activity has focus.
    */
-  public static synchronized Activity getRunningActivity() {
+  public static Activity getRunningActivity(long timeoutMillis) {
+    // It's safe to check running activity only when the main looper is idle.
+    // If the AUT is in background, its main looper should be idle already.
+    // If the AUT is in foreground, its main looper should be idle eventually.
+    if (InstrumentationUtils.tryWaitForIdleSync(timeoutMillis)) {
+      return getRunningActivityNoWait();
+    }
+    return null;
+  }
+
+  /**
+   * Gets the running (a.k.a. resumed or foreground) activity without waiting for idle on main
+   * looper.
+   *
+   * @return the currently running activity, or null if no activity has focus.
+   */
+  public static synchronized Activity getRunningActivityNoWait() {
     if (runningActivitySupplier == null) {
-      throw new UnrecoverableException("If you don't use DroidDriver TestRunner, you need to call" +
-          " ActivityUtils.setRunningActivitySupplier appropriately");
+      throw new UnrecoverableException(
+          "If you don't use DroidDriver TestRunner, you need to call"
+              + " ActivityUtils.setRunningActivitySupplier appropriately");
     }
     return runningActivitySupplier.get();
   }
