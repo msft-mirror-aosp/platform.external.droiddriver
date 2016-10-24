@@ -18,9 +18,6 @@ package io.appium.droiddriver.finders;
 
 import android.content.Context;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.appium.droiddriver.UiElement;
 import io.appium.droiddriver.exceptions.ElementNotFoundException;
 import io.appium.droiddriver.util.InstrumentationUtils;
@@ -31,19 +28,14 @@ import static io.appium.droiddriver.util.Preconditions.checkNotNull;
  * Convenience methods to create commonly used finders.
  */
 public class By {
-
   private static final MatchFinder ANY = new MatchFinder(null);
 
-  /**
-   * Matches any UiElement.
-   */
+  /** Matches any UiElement. */
   public static MatchFinder any() {
     return ANY;
   }
 
-  /**
-   * Matches a UiElement whose {@code attribute} is {@code true}.
-   */
+  /** Matches a UiElement whose {@code attribute} is {@code true}. */
   public static MatchFinder is(Attribute attribute) {
     return new MatchFinder(Predicates.attributeTrue(attribute));
   }
@@ -55,91 +47,74 @@ public class By {
     return new MatchFinder(Predicates.attributeFalse(attribute));
   }
 
-  /**
-   * Matches a UiElement by a resource id defined in the AUT.
-   */
+  /** Matches a UiElement by a resource id defined in the AUT. */
   public static MatchFinder resourceId(int resourceId) {
     Context targetContext = InstrumentationUtils.getInstrumentation().getTargetContext();
     return resourceId(targetContext.getResources().getResourceName(resourceId));
   }
 
   /**
-   * Matches a UiElement by the string representation of a resource id. This works for resources not
-   * belonging to the AUT.
+   * Matches a UiElement by the string representation of a resource id. This works for resources
+   * not belonging to the AUT.
    */
   public static MatchFinder resourceId(String resourceId) {
     return new MatchFinder(Predicates.attributeEquals(Attribute.RESOURCE_ID, resourceId));
   }
 
-  /**
-   * Matches a UiElement by package name.
-   */
+  /** Matches a UiElement by package name. */
   public static MatchFinder packageName(String name) {
     return new MatchFinder(Predicates.attributeEquals(Attribute.PACKAGE, name));
   }
 
-  /**
-   * Matches a UiElement by the exact text.
-   */
+  /** Matches a UiElement by the exact text. */
   public static MatchFinder text(String text) {
     return new MatchFinder(Predicates.attributeEquals(Attribute.TEXT, text));
   }
 
-  /**
-   * Matches a UiElement whose text matches {@code regex}.
-   */
+  /** Matches a UiElement whose text matches {@code regex}. */
   public static MatchFinder textRegex(String regex) {
     return new MatchFinder(Predicates.attributeMatches(Attribute.TEXT, regex));
   }
 
-  /**
-   * Matches a UiElement whose text contains {@code substring}.
-   */
+  /** Matches a UiElement whose text contains {@code substring}. */
   public static MatchFinder textContains(String substring) {
     return new MatchFinder(Predicates.attributeContains(Attribute.TEXT, substring));
   }
 
-  /**
-   * Matches a UiElement by content description.
-   */
+  /** Matches a UiElement by content description. */
   public static MatchFinder contentDescription(String contentDescription) {
     return new MatchFinder(Predicates.attributeEquals(Attribute.CONTENT_DESC, contentDescription));
   }
 
-  /**
-   * Matches a UiElement whose content description contains {@code substring}.
-   */
+  /** Matches a UiElement whose content description contains {@code substring}. */
   public static MatchFinder contentDescriptionContains(String substring) {
     return new MatchFinder(Predicates.attributeContains(Attribute.CONTENT_DESC, substring));
   }
 
-  /**
-   * Matches a UiElement by class name.
-   */
+  /** Matches a UiElement by class name. */
   public static MatchFinder className(String className) {
     return new MatchFinder(Predicates.attributeEquals(Attribute.CLASS, className));
   }
 
-  /**
-   * Matches a UiElement by class name.
-   */
+  /** Matches a UiElement by class name. */
   public static MatchFinder className(Class<?> clazz) {
     return className(clazz.getName());
   }
 
-  /**
-   * Matches a UiElement that is selected.
-   */
+  /** Matches a UiElement that is selected. */
   public static MatchFinder selected() {
     return is(Attribute.SELECTED);
   }
 
   /**
-   * Matches by XPath. When applied on an non-root element, it will not evaluate above the context
-   * element. <p> XPath is the domain-specific-language for navigating a node tree. It is ideal if
-   * the UiElement to match has a complex relationship with surrounding nodes. For simple cases,
-   * {@link #withParent} or {@link #withAncestor} are preferred, which can combine with other {@link
-   * MatchFinder}s in {@link #allOf}. For complex cases like below, XPath is superior:
+   * Matches by XPath. When applied on an non-root element, it will not evaluate
+   * above the context element.
+   * <p>
+   * XPath is the domain-specific-language for navigating a node tree. It is
+   * ideal if the UiElement to match has a complex relationship with surrounding
+   * nodes. For simple cases, {@link #withParent} or {@link #withAncestor} are
+   * preferred, which can combine with other {@link MatchFinder}s in
+   * {@link #allOf}. For complex cases like below, XPath is superior:
    *
    * <pre>
    * {@code
@@ -157,8 +132,8 @@ public class By {
    * }
    * </pre>
    *
-   * If we need to locate the RelativeLayout containing the album "Forever" instead of a song or an
-   * artist named "Forever", this XPath works:
+   * If we need to locate the RelativeLayout containing the album "Forever"
+   * instead of a song or an artist named "Forever", this XPath works:
    *
    * <pre>
    * {@code //*[LinearLayout/*[@text='Albums']]/RelativeLayout[*[@text='Forever']]}
@@ -172,28 +147,34 @@ public class By {
   }
 
   /**
-   * Returns a finder that uses the UiElement returned by first Finder as context for the second
-   * Finder. <p> typically first Finder finds the ancestor, then second Finder finds the target
-   * UiElement, which is a descendant. </p> Note that if the first Finder matches multiple
-   * UiElements, only the first match is tried, which usually is not what callers expect. In this
-   * case, allOf(second, withAncesor(first)) may work.
+   * Returns a finder that uses the UiElement returned by first Finder as
+   * context for the second Finder.
+   * <p>
+   * typically first Finder finds the ancestor, then second Finder finds the
+   * target UiElement, which is a descendant.
+   * </p>
+   * Note that if the first Finder matches multiple UiElements, only the first
+   * match is tried, which usually is not what callers expect. In this case,
+   * allOf(second, withAncesor(first)) may work.
    */
   public static ChainFinder chain(Finder first, Finder second) {
     return new ChainFinder(first, second);
   }
 
-  private static List<Predicate<? super UiElement>> getPredicates(MatchFinder... finders) {
-    ArrayList<Predicate<? super UiElement>> predicates = new ArrayList<>(finders.length);
+  private static Predicate<? super UiElement>[] getPredicates(MatchFinder... finders) {
+    @SuppressWarnings("unchecked")
+    Predicate<? super UiElement>[] predicates = new Predicate[finders.length];
     for (int i = 0; i < finders.length; i++) {
-      predicates.add(finders[i].predicate);
+      predicates[i] = finders[i].predicate;
     }
     return predicates;
   }
 
   /**
-   * Evaluates given {@code finders} in short-circuit fashion in the order they are passed. Costly
-   * finders (for example those returned by with* methods that navigate the node tree) should be
-   * passed after cheap finders (for example the ByAttribute finders).
+   * Evaluates given {@code finders} in short-circuit fashion in the order
+   * they are passed. Costly finders (for example those returned by with*
+   * methods that navigate the node tree) should be passed after cheap finders
+   * (for example the ByAttribute finders).
    *
    * @return a finder that is the logical conjunction of given finders
    */
@@ -202,9 +183,10 @@ public class By {
   }
 
   /**
-   * Evaluates given {@code finders} in short-circuit fashion in the order they are passed. Costly
-   * finders (for example those returned by with* methods that navigate the node tree) should be
-   * passed after cheap finders (for example the ByAttribute finders).
+   * Evaluates given {@code finders} in short-circuit fashion in the order
+   * they are passed. Costly finders (for example those returned by with*
+   * methods that navigate the node tree) should be passed after cheap finders
+   * (for example the ByAttribute finders).
    *
    * @return a finder that is the logical disjunction of given finders
    */
@@ -213,8 +195,8 @@ public class By {
   }
 
   /**
-   * Matches a UiElement whose parent matches the given parentFinder. For complex cases, consider
-   * {@link #xpath}.
+   * Matches a UiElement whose parent matches the given parentFinder. For
+   * complex cases, consider {@link #xpath}.
    */
   public static MatchFinder withParent(MatchFinder parentFinder) {
     checkNotNull(parentFinder);
@@ -222,8 +204,8 @@ public class By {
   }
 
   /**
-   * Matches a UiElement whose ancestor matches the given ancestorFinder. For complex cases,
-   * consider {@link #xpath}.
+   * Matches a UiElement whose ancestor matches the given ancestorFinder. For
+   * complex cases, consider {@link #xpath}.
    */
   public static MatchFinder withAncestor(MatchFinder ancestorFinder) {
     checkNotNull(ancestorFinder);
@@ -231,8 +213,8 @@ public class By {
   }
 
   /**
-   * Matches a UiElement which has a visible sibling matching the given siblingFinder. This could be
-   * inefficient; consider {@link #xpath}.
+   * Matches a UiElement which has a visible sibling matching the given
+   * siblingFinder. This could be inefficient; consider {@link #xpath}.
    */
   public static MatchFinder withSibling(MatchFinder siblingFinder) {
     checkNotNull(siblingFinder);
@@ -240,8 +222,8 @@ public class By {
   }
 
   /**
-   * Matches a UiElement which has a visible child matching the given childFinder. This could be
-   * inefficient; consider {@link #xpath}.
+   * Matches a UiElement which has a visible child matching the given
+   * childFinder. This could be inefficient; consider {@link #xpath}.
    */
   public static MatchFinder withChild(MatchFinder childFinder) {
     checkNotNull(childFinder);
@@ -249,8 +231,8 @@ public class By {
   }
 
   /**
-   * Matches a UiElement whose descendant (including self) matches the given descendantFinder. This
-   * could be VERY inefficient; consider {@link #xpath}.
+   * Matches a UiElement whose descendant (including self) matches the given
+   * descendantFinder. This could be VERY inefficient; consider {@link #xpath}.
    */
   public static MatchFinder withDescendant(final MatchFinder descendantFinder) {
     checkNotNull(descendantFinder);
@@ -272,14 +254,11 @@ public class By {
     });
   }
 
-  /**
-   * Matches a UiElement that does not match the provided {@code finder}.
-   */
+  /** Matches a UiElement that does not match the provided {@code finder}. */
   public static MatchFinder not(MatchFinder finder) {
     checkNotNull(finder);
     return new MatchFinder(Predicates.not(finder.predicate));
   }
 
-  private By() {
-  }
+  private By() {}
 }
