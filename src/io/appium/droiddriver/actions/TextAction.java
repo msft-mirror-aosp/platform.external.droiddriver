@@ -59,7 +59,6 @@ public class TextAction extends KeyAction {
 
     // TODO: recycle events?
     KeyEvent[] events = KEY_CHAR_MAP.getEvents(text.toCharArray());
-    boolean success = false;
 
     if (events != null) {
       for (KeyEvent event : events) {
@@ -69,15 +68,14 @@ public class TextAction extends KeyAction {
         // possible for an event to become stale before it is injected if it
         // takes too long to inject the preceding ones.
         KeyEvent modifiedEvent = KeyEvent.changeTimeRepeat(event, SystemClock.uptimeMillis(), 0);
-        success = injector.injectInputEvent(modifiedEvent);
-        if (!success) {
-          break;
+        if (!injector.injectInputEvent(modifiedEvent)) {
+          throw new ActionException("Failed to inject " + event);
         }
       }
     } else {
       throw new ActionException("The given text is not supported: " + text);
     }
-    return success;
+    return true;
   }
 
   @Override
