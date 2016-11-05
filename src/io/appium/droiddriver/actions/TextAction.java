@@ -21,29 +21,26 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
-
+import android.view.ViewConfiguration;
 import io.appium.droiddriver.UiElement;
 import io.appium.droiddriver.exceptions.ActionException;
 import io.appium.droiddriver.util.Preconditions;
 import io.appium.droiddriver.util.Strings;
 
-/**
- * An action to type text.
- */
+/** An action to type text. */
 public class TextAction extends KeyAction {
 
   @SuppressLint("InlinedApi")
   @SuppressWarnings("deprecation")
   private static final KeyCharacterMap KEY_CHAR_MAP =
-      Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB ? KeyCharacterMap
-          .load(KeyCharacterMap.BUILT_IN_KEYBOARD) : KeyCharacterMap
-          .load(KeyCharacterMap.VIRTUAL_KEYBOARD);
-
+      Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
+          ? KeyCharacterMap.load(KeyCharacterMap.BUILT_IN_KEYBOARD)
+          : KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
+  // KeyRepeatDelay is a good heuristic for KeyInjectionDelay.
+  private static long keyInjectionDelayMillis = ViewConfiguration.getKeyRepeatDelay();
   private final String text;
 
-  /**
-   * Defaults timeoutMillis to 100.
-   */
+  /** Defaults timeoutMillis to 100. */
   public TextAction(String text) {
     this(text, 100L, false);
   }
@@ -51,6 +48,14 @@ public class TextAction extends KeyAction {
   public TextAction(String text, long timeoutMillis, boolean checkFocused) {
     super(timeoutMillis, checkFocused);
     this.text = Preconditions.checkNotNull(text);
+  }
+
+  public static long getKeyInjectionDelayMillis() {
+    return keyInjectionDelayMillis;
+  }
+
+  public static void setKeyInjectionDelayMillis(long keyInjectionDelayMillis) {
+    TextAction.keyInjectionDelayMillis = keyInjectionDelayMillis;
   }
 
   @Override
@@ -71,6 +76,7 @@ public class TextAction extends KeyAction {
         if (!injector.injectInputEvent(modifiedEvent)) {
           throw new ActionException("Failed to inject " + event);
         }
+        SystemClock.sleep(keyInjectionDelayMillis);
       }
     } else {
       throw new ActionException("The given text is not supported: " + text);
