@@ -16,7 +16,7 @@ android {
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion 23
-        testInstrumentationRunner 'io.appium.droiddriver.runner.TestRunner'
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
     sourceSets {
         main {

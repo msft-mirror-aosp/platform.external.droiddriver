@@ -31,10 +31,13 @@ import java.lang.annotation.Target;
  * As any annotations, it is useful only if it is processed by tools.
  * {@link TestRunner} filters out tests with this annotation if the current
  * device has a lower SDK version.
+ *
+ * @deprecated Use android.support.test.filters.SdkSuppress instead.
  */
 @Inherited
 @Target({TYPE, METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Deprecated
 public @interface MinSdkVersion {
   /**
    * The minimum required SDK version.

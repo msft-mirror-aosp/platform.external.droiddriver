@@ -28,6 +28,14 @@ version = ddVersion
 apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.library'
 
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'com.android.support.test:runner:0.4.1'
+}
+
 tasks.withType(JavaCompile) {
     options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
 }

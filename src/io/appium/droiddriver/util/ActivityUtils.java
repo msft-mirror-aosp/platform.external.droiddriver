@@ -17,37 +17,54 @@
 package io.appium.droiddriver.util;
 
 import android.app.Activity;
-import io.appium.droiddriver.exceptions.UnrecoverableException;
+import android.os.Looper;
+import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import android.support.test.runner.lifecycle.Stage;
+import android.util.Log;
+import java.util.Iterator;
+import java.util.concurrent.Callable;
 
-/**
- * Static helper methods for retrieving activities.
- */
+/** Static helper methods for retrieving activities. */
 public class ActivityUtils {
-  public interface Supplier<T> {
-    /**
-     * Retrieves an instance of the appropriate type. The returned object may or
-     * may not be a new instance, depending on the implementation.
-     *
-     * @return an instance of the appropriate type
-     */
-    T get();
-  }
+  private static final Callable<Activity> GET_RUNNING_ACTIVITY =
+      new Callable<Activity>() {
+        @Override
+        public Activity call() {
+          Iterator<Activity> activityIterator =
+              ActivityLifecycleMonitorRegistry.getInstance()
+                  .getActivitiesInStage(Stage.RESUMED)
+                  .iterator();
+          return activityIterator.hasNext() ? activityIterator.next() : null;
+        }
+      };
+  private static Supplier<Activity> runningActivitySupplier =
+      new Supplier<Activity>() {
+        @Override
+        public Activity get() {
+          try {
+            // If this is called on main (UI) thread, don't call runOnMainSync
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+              return GET_RUNNING_ACTIVITY.call();
+            }
 
-  private static Supplier<Activity> runningActivitySupplier;
+            return InstrumentationUtils.runOnMainSyncWithTimeout(GET_RUNNING_ACTIVITY);
+          } catch (Exception e) {
+            Logs.log(Log.WARN, e);
+            return null;
+          }
+        }
+      };
 
   /**
-   * Sets the Supplier for the running (a.k.a. resumed or foreground) activity.
-   * Called from {@link io.appium.droiddriver.runner.TestRunner}. If a
-   * custom runner is used, this method must be called appropriately, otherwise
-   * {@link #getRunningActivity} won't work.
+   * Sets the Supplier for the running (a.k.a. resumed or foreground) activity. If a custom runner
+   * is used, this method must be called appropriately, otherwise {@link #getRunningActivity} won't
+   * work.
    */
   public static synchronized void setRunningActivitySupplier(Supplier<Activity> activitySupplier) {
-    runningActivitySupplier = activitySupplier;
+    runningActivitySupplier = Preconditions.checkNotNull(activitySupplier);
   }
 
-  /**
-   * Shorthand to {@link #getRunningActivity(long)} with {@code timeoutMillis=30_000}.
-   */
+  /** Shorthand to {@link #getRunningActivity(long)} with {@code timeoutMillis=30_000}. */
   public static Activity getRunningActivity() {
     return getRunningActivity(30_000L);
   }
@@ -74,11 +91,16 @@ public class ActivityUtils {
    * @return the currently running activity, or null if no activity has focus.
    */
   public static synchronized Activity getRunningActivityNoWait() {
-    if (runningActivitySupplier == null) {
-      throw new UnrecoverableException(
-          "If you don't use DroidDriver TestRunner, you need to call"
-              + " ActivityUtils.setRunningActivitySupplier appropriately");
-    }
     return runningActivitySupplier.get();
+  }
+
+  public interface Supplier<T> {
+    /**
+     * Retrieves an instance of the appropriate type. The returned object may or may not be a new
+     * instance, depending on the implementation.
+     *
+     * @return an instance of the appropriate type
+     */
+    T get();
   }
 }

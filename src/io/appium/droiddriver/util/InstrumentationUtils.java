@@ -20,10 +20,10 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
+import android.support.test.InstrumentationRegistry;
 import android.util.Log;
 import io.appium.droiddriver.exceptions.DroidDriverException;
 import io.appium.droiddriver.exceptions.TimeoutException;
-import io.appium.droiddriver.exceptions.UnrecoverableException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -43,11 +43,11 @@ public class InstrumentationUtils {
   private static long runOnMainSyncTimeoutMillis;
 
   /**
-   * Initializes this class. If you use a runner that is not DroidDriver-aware, you need to call
-   * this method appropriately. See {@link io.appium.droiddriver.runner.TestRunner#onCreate} for
-   * example.
+   * Initializes this class. If you don't use android.support.test.runner.AndroidJUnitRunner or a
+   * runner that supports {link InstrumentationRegistry}, you need to call this method
+   * appropriately.
    */
-  public static void init(Instrumentation instrumentation, Bundle arguments) {
+  public static synchronized void init(Instrumentation instrumentation, Bundle arguments) {
     if (InstrumentationUtils.instrumentation != null) {
       throw new DroidDriverException("init() can only be called once");
     }
@@ -55,14 +55,13 @@ public class InstrumentationUtils {
     options = arguments;
 
     String timeoutString = getD2Option("runOnMainSyncTimeout");
-    runOnMainSyncTimeoutMillis = timeoutString == null ? 10000L : Long.parseLong(timeoutString);
+    runOnMainSyncTimeoutMillis = timeoutString == null ? 10_000L : Long.parseLong(timeoutString);
   }
 
-  private static void checkInitialized() {
+  private static synchronized void checkInitialized() {
     if (instrumentation == null) {
-      throw new UnrecoverableException(
-          "If you use a runner that is not DroidDriver-aware, you"
-              + " need to call InstrumentationUtils.init appropriately");
+      // Assume android.support.test.runner.InstrumentationRegistry is valid
+      init(InstrumentationRegistry.getInstrumentation(), InstrumentationRegistry.getArguments());
     }
   }
 
@@ -85,11 +84,7 @@ public class InstrumentationUtils {
     return options;
   }
 
-  /**
-   * Gets the string value associated with the given key. This is preferred over using {@link
-   * #getOptions} because the returned {@link Bundle} contains only string values - am instrument
-   * options do not support value types other than string.
-   */
+  /** Gets the string value associated with the given key. */
   public static String getOption(String key) {
     return getOptions().getString(key);
   }
@@ -110,7 +105,7 @@ public class InstrumentationUtils {
   public static boolean tryWaitForIdleSync(long timeoutMillis) {
     checkNotMainThread();
     FutureTask<Void> emptyTask = new FutureTask<Void>(EMPTY_RUNNABLE, null);
-    instrumentation.waitForIdle(emptyTask);
+    getInstrumentation().waitForIdle(emptyTask);
 
     try {
       emptyTask.get(timeoutMillis, TimeUnit.MILLISECONDS);

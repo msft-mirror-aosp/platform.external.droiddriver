@@ -44,7 +44,10 @@ import io.appium.droiddriver.util.Logs;
 
 /**
  * Adds activity watcher to InstrumentationTestRunner.
+ *
+ * @deprecated Use android.support.test.runner.AndroidJUnitRunner instead.
  */
+@Deprecated
 public class TestRunner extends InstrumentationTestRunner {
   private final Set<Activity> activities = new HashSet<Activity>();
   private final AndroidTestRunner androidTestRunner = new AndroidTestRunner();
