@@ -25,12 +25,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation indicates that its target needs a minimum SDK version
- * specified as its value.
- * <p>
- * As any annotations, it is useful only if it is processed by tools.
- * {@link TestRunner} filters out tests with this annotation if the current
- * device has a lower SDK version.
+ * This annotation indicates that its target needs a minimum SDK version specified as its value.
+ *
+ * <p>As any annotations, it is useful only if it is processed by tools.
  *
  * @deprecated Use android.support.test.filters.SdkSuppress instead.
  */
@@ -39,8 +36,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Deprecated
 public @interface MinSdkVersion {
-  /**
-   * The minimum required SDK version.
-   */
+  /** The minimum required SDK version. */
   int value();
 }
